@@ -1,5 +1,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
+/* in src/index.css */
+
+@theme {
+  --font-size-home-heading-small: 28px;
+  --line-height-home-heading-small: 34px;
+
+  --font-size-home-heading-large: 48px;
+  --line-height-home-heading-large: 56px;
+}
+
+.text-home-heading-small {
+  font-size: var(--font-size-home-heading-small);
+  line-height: var(--line-height-home-heading-small);
+}
+.gridTemplateColumns {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.text-home-heading-large {
+  font-size: var(--font-size-home-heading-large);
+  line-height: var(--line-height-home-heading-large);
+}
 
 *{
   font-family: Outfit;
