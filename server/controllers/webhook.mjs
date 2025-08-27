@@ -4,6 +4,8 @@ import User from "../models/User.mjs";
 export const clerkWebhooks=async (req,res)=>{
   try {
     const whook=new Webhook(process.env.CLERK_WEBHOOK_SECRET);
+    console.log("Webhook event:", req.body);
+
 
   const payload = req.body; // raw Buffer
 const headers = {
@@ -13,6 +15,9 @@ const headers = {
 };
 
 const evt = whook.verify(payload, headers); // this returns parsed JSON
+
+console.log("Webhook event:", req.body);
+
 
 const { data, type } = evt;
 
