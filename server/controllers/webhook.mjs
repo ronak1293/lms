@@ -21,7 +21,7 @@ export const clerkWebhooks=async (req,res)=>{
         }
 
         await User.create(userData);
-        res.JSON({})
+        res.Json({})
         break;
       }
 
@@ -32,13 +32,13 @@ export const clerkWebhooks=async (req,res)=>{
           imageUrl:data.image_url,
         }
          await User.findByIdAndUpdate(data.id,userData);
-        res.JSON({})
+        res.Json({})
         break;
       }
 
       case 'user.deleted':{
         await User.findByIdAndDelete(data.id);
-         res.JSON({})
+         res.Json({})
         break;
       }
       default:
