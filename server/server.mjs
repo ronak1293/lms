@@ -24,8 +24,11 @@ await connectCloudinary()
 //middlewares
 app.use(cors())
 app.use(
-  clerkMiddleware()
+  clerkMiddleware({
+    ignoredRoutes: ["/stripe", "/clerk"], 
+  })
 );
+
 
 
 app.get('/',async (req,res)=> {
