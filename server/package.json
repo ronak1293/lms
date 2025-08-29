@@ -2,7 +2,7 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "server.mjs",
   "type": "module",
   "scripts": {
     "start": "nodemon server.mjs"
@@ -11,7 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@clerk/express": "^1.7.25",
+    "@clerk/backend": "^2.10.1",
+    "@clerk/clerk-sdk-node": "^5.1.6",
+    "@clerk/express": "^1.7.26",
     "cloudinary": "^2.7.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
@@ -19,7 +21,7 @@
     "mongoose": "^8.18.0",
     "multer": "^2.0.2",
     "nodemon": "^3.1.10",
-    "stripe": "^18.4.0",
+    "stripe": "^18.5.0",
     "svix": "^1.42.0"
   }
 }

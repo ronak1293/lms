@@ -1,5 +1,8 @@
 import { Webhook } from "svix";
 import User from "../models/User.mjs";
+import Stripe from "stripe";
+import { Purchase } from "../models/purchase.mjs";
+import Course from "../models/Course.mjs";
 
 export const clerkWebhooks=async (req,res)=>{
   try {
@@ -61,4 +64,71 @@ const { data, type } = evt;
 
     
   }
+}
+
+//stripe webhook controllers
+const stripeInstance=new Stripe(process.env.STRIPE_SECRET_KEY)
+export const stripeWebhooks=async (req,res)=>{
+  const sig=req.headers['stripe-signature']
+
+  let event;
+
+  try {
+    event=Stripe.webhooks.constructEvent(req.body,sig,process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (error) {
+    res.status(400).send(`webhook err:${error.message}`);
+  }
+
+  switch(event.type){
+    case 'payment_intent.succeeded':{
+      const paymentIntent=event.data.object;
+      const paymentIntentId=paymentIntent.id;
+
+      const session =await stripeInstance.checkout.sessions.list({
+        payment_intent:paymentIntentId
+      })
+      const {purchaseId}=session.data[0].metadata;
+
+      const purchaseData=await Purchase.findById(purchaseId);
+      const userData=await User.findById(purchaseData.userId);
+      const courseData=await Course.findById(purchaseData.courseId.toString());
+
+      courseData.enrolledStudents.push(userData);
+      await courseData.save();
+
+      userData.enrolledCourses.push(courseData._id);
+      await userData.save();
+
+      purchaseData.status='completed'
+      await purchaseData.save()
+
+
+      break;
+    }
+    case 'payment_intent.payment_failed':{
+        const paymentIntent=event.data.object;
+      const paymentIntentId=paymentIntent.id;
+
+      const session =await stripeInstance.checkout.sessions.list({
+        payment_intent:paymentIntentId
+      })
+      const {purchaseId}=session.data[0].metadata;
+
+      const purchaseData=await Purchase.findById(purchaseId);
+
+      purchaseData.status='failed'
+      await purchaseData.save();
+
+
+      break;
+    }
+
+    default:
+      console.log(`unhandles event ${event.type}`);
+      
+  }
+
+  res.json({received:true});
+
+
 }
