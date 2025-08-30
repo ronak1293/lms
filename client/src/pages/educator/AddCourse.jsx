@@ -1,9 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import uniqid from 'uniqid'
 import Quill from 'quill'
 import { assets } from '../../assets/assets';
+import { AppContext } from '../../context/AppContext';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 function AddCourse() {
+
+  const {backendUrl,getToken}=useContext(AppContext);
+
   const quillRef=useRef(null);
   const editorRef=useRef(null);
 
@@ -91,7 +97,51 @@ function AddCourse() {
   }
 
   const handleSubmit=async (e)=>{
-    e.preventDefault();
+   
+    
+    try {
+
+      e.preventDefault();
+      if(!image){
+        toast.error('thumbnail not selected');
+        return;
+      }
+
+      const courseData={
+        courseTitle,
+        courseDescription:quillRef.current ? quillRef.current.root.innerHTML : "",
+        coursePrice:Number(coursePrice),
+        discount:Number(discount),
+        courseContent:chapters
+      }
+
+      const formData=new FormData()
+      formData.append('courseData',JSON.stringify(courseData))
+      formData.append('image',image);
+
+      const token=await getToken();
+      const {data}=await axios.post(backendUrl+`/api/educator/add-course`,formData,{headers:{Authorization:`Bearer ${token}`}})
+
+      if(data.success){
+        toast.success(data.message);
+        setCourseTitle('')
+        setCoursePrice(0)
+        setDiscount(0)
+        setImage(null)
+        setChapters([])
+        quillRef.current.root.innerHTML=""
+      }
+      else{
+         toast.error(data.message);
+         console.log(data.message);
+         
+      }
+
+    } catch (error) {
+       toast.error(error.message);
+       console.log(error.message);
+       
+    }
 
   }
 
@@ -105,7 +155,7 @@ function AddCourse() {
   },[])
   return (
     <div className='h-screen overflow-scroll flex flex-col items-start justify-between md:p-8 md:pb-0 p-4 pt-8 pb-0'>
-      <form onSubmit={() => handleSubmit()} className='flex flex-col gap-4 max-w-md w-full text-gray-500'>
+      <form onSubmit={handleSubmit} className='flex flex-col gap-4 max-w-md w-full text-gray-500'>
         <div className='flex flex-col gap-1'>
           <p>Course Title</p>
           <input onChange={e => setCourseTitle(e.target.value)} value={courseTitle} type='text' placeholder='Type here' className='outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500' required/>

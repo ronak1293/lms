@@ -6,6 +6,8 @@ import { assets } from "../../assets/assets";
 import humanizeDuration from "humanize-duration";
 import Footer from "../../components/student/Footer";
 import YouTube from "react-youtube";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 
 function CourseDetails() {
@@ -16,16 +18,57 @@ function CourseDetails() {
   const [isAlreadyEnrolled,setIsAlreadyEnrolled]=useState(false);
   const [playerData,setPlayerData]=useState(null)
 
-  const { allCourses,calculateRating,calculateCourseDuration,calculateChapterTime,calculateNoOfLectures,currency } = useContext(AppContext);
+  const { allCourses,calculateRating,calculateCourseDuration,calculateChapterTime,calculateNoOfLectures,currency,backendUrl,userData ,getToken} = useContext(AppContext);
 
   const fetchCourseData = async () => {
-    const findCourse = allCourses.find((course) => course._id === id);
-    setCourseData(findCourse);
+    try {
+      const {data}=await axios.get(backendUrl+'/api/course/'+id)
+
+      if(data.success){
+        setCourseData(data.courseData);
+      }else{
+        toast.error(data.message);
+      }
+
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
+//purchase course
+  const enrollCourse=async ()=>{
+    try {
+      if(!userData){
+        return toast.warn('Login to enroll');
+      }
+      if(isAlreadyEnrolled){
+        return toast.warn('Already enrolled');
+      }
+
+      const token=await getToken();
+      const {data}=await axios.post(backendUrl+'/api/user/purchase',{
+        courseId:courseData._id
+      },{headers:{Authorization:`Bearer ${token}`}})
+
+      if(data.success){
+        const {session_url}=data
+        window.location.replace(session_url);
+      }else{
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  }
 
   useEffect(() => {
     fetchCourseData();
-  }, [allCourses]);
+  }, []);
+
+  useEffect(() => {
+    if(userData&& courseData){
+      setIsAlreadyEnrolled(userData.enrolledCourses.includes(courseData._id))
+    }
+  }, [userData,courseData]);
 
   const toggleSection=(index)=>{
     setOpenSections((prev)=>(
@@ -176,7 +219,7 @@ function CourseDetails() {
 
               
             </div>
-            <button className="md:mt-6 mt-9 w-full py-3 rounded bg-blue-600 text-white font-medium">{isAlreadyEnrolled?'Already Enrolled':'Enroll now'}</button>
+            <button onClick={enrollCourse} className="md:mt-6 mt-9 w-full py-3 rounded bg-blue-600 text-white font-medium">{isAlreadyEnrolled?'Already Enrolled':'Enroll now'}</button>
 
               <div className="pt-6">
                 <p className="md:text-xl text-lg font-medium text-gray-800">What's in the course?</p>

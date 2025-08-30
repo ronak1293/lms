@@ -175,6 +175,7 @@ export const addUserRating=async (req,res)=>{
         course.courseRatings[existingRatingIndex].rating=rating;
       }else{
         course.courseRatings.push({userId,rating});
+        await course.save();
       }
 
       return res.json({success:true,message:'ratings added'});
