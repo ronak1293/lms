@@ -32,8 +32,8 @@ app.use(
 
 
 app.get('/',async (req,res)=> {
- const users= await clerkClient.users.getUserList();
-  res.send(users)})
+res.json({message:'working'})})
+
 app.post('/clerk', express.raw({ type: 'application/json' }), clerkWebhooks)
 app.use('/api/educator',express.json(),educatorRouter)
 app.use('/api/course',express.json(),courseRouter);
